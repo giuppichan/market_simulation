@@ -3,5 +3,4 @@ pandas
 numpy
 openpyxl
 simpy
-random
 altair
