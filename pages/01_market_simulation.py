@@ -1,21 +1,15 @@
 # to run the app:
 # streamlit run web_market_simulation.py
 
-# developments related to v3
+# developments related this version
 # 1) web deployment
-# 2) properly synch position list occupancy and budget editing
-
-# developments related to v4
-# NOTE: changed but not tested!
-# 3) add a total below budget summary
-# 4) split laspes cost between grade differnece and proper lapsed cost
 
 import streamlit as st
 import pandas as pd
 import numpy as np
 import simpy
 import altair as alt
-
+import random
 
 class Buyer(object):
     def __init__ (self, env, name, market):
