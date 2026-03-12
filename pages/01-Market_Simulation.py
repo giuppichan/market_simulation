@@ -153,6 +153,20 @@ class Market (object):
 
 # st.set_page_config(layout="wide")
 st.title("Market simulation")
+st.write("This is the baseline market simulation. The dynamics work as follows:")
+st.write("- Each **Seller** produces a random quantity between 1 and 20 units.")
+st.write("- Each **Buyer** has a demand between 1 and 20 units.")
+st.write("- The **price range** defines the initial offered price for Sellers and the initial payable price for Buyers.")
+st.write("During each turn:")
+st.write("- Buyers and Sellers with a positive quantity (or demand) are randomly matched.")
+st.write("- If a Seller’s offered price is **lower than or equal to** a Buyer’s payable price, a transaction occurs.")
+st.write("- The Buyer purchases as much as possible, up to the Seller’s available quantity and the Buyer’s remaining demand.")
+st.write("After each turn:")
+st.write("- Every Seller replenishes their production.")
+st.write("- Every Buyer replenishes their demand.")
+st.write("Price adjustment rules:")
+st.write("- A **Buyer** whose demand was not fully satisfied increases its payable price by 1, up to the maximum market price.")
+st.write("- A **Seller** with leftover stock decreases its offered price by 1, down to the minimum market price.")
 
 num_seller = st.number_input(
     "Number of sellers", min_value=1, max_value=50, value=10  )
