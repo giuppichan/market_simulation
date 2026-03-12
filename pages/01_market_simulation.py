@@ -1,5 +1,5 @@
 # to run the app:
-# streamlit run web_market_simulation.py
+# streamlit run Home.py
 
 # developments related this version
 # 1) web deployment
