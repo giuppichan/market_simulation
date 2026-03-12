@@ -3,6 +3,7 @@
 
 # developments related this version
 # 1) web deployment
+# 2) parameters added
 
 import streamlit as st
 import pandas as pd
@@ -10,6 +11,7 @@ import numpy as np
 import simpy
 import altair as alt
 import random
+from dataclasses import dataclass
 
 class Buyer(object):
     def __init__ (self, env, name, market):
@@ -154,8 +156,7 @@ class Market (object):
 # st.set_page_config(layout="wide")
 st.title("Market simulation")
 st.write("This is the baseline market simulation. The dynamics work as follows:")
-st.write("- Each **Seller** produces a random quantity between 1 and 20 units.")
-st.write("- Each **Buyer** has a demand between 1 and 20 units.")
+st.write("- Each **Seller** produces a random quantity within the selected range, each **Buyer** has a demand within the selected range.")
 st.write("- The **price range** defines the initial offered price for Sellers and the initial payable price for Buyers.")
 st.write("During each turn:")
 st.write("- Buyers and Sellers with a positive quantity (or demand) are randomly matched.")
@@ -170,6 +171,7 @@ st.write("- A **Seller** with leftover stock decreases its offered price by 1, d
 
 num_seller = st.number_input(
     "Number of sellers", min_value=1, max_value=50, value=10  )
+seller_min_quantity, seller_max_quantity = st.slider("Seller Quantity Range", min_value=1, max_value=100, value=(25, 75), step=1, key="seller_quantity_range")
 
 num_buyer = st.number_input(
     "Number of buyers", min_value=1, max_value=50, value=10  )
