@@ -35,7 +35,7 @@ class Buyer(object):
         while True:
             if self.quantity < self.consumption: # cound not satisfy demand
                 self.price += 1
-                if self.price < self.market.max_price:
+                if self.price < self.market.config.buyer_max_price:
                     self.price = random.randint(self.price, self.market.max_price)
             self.quantity = 0 # no stock
 
@@ -63,7 +63,7 @@ class Seller(object):
         while True:
             if self.quantity > 0: #could not sell everything
                 self.price -= 1
-                if self.price > self.market.min_price:
+                if self.price > self.market.config.seller_min_price:
                     self.price = random.randint(self.market.min_price, self.price)
             self.quantity = self.production
             yield self.env.timeout(1)
@@ -95,7 +95,7 @@ class Market (object):
         self.min_price = None
         self.max_price = None
 
-        for i in range(1, num_buyer+1):
+        for i in range(1, self.config.num_buyer+1):
             b=Buyer(env, "Buyer n.%d" % i, self)
             self.buyers_list.append(b)
             self.buyers_df = pd.concat([
@@ -103,7 +103,7 @@ class Market (object):
                 ], ignore_index=True)
         print("buyers created")
         
-        for i in range(1, num_seller+1):
+        for i in range(1, self.config.num_seller+1):
             s=Seller(env, "Seller n.%d" % i, self)
             self.sellers_list.append(s)
             self.sellers_df = pd.concat([
