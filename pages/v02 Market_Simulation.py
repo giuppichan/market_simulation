@@ -92,8 +92,8 @@ class Market (object):
         self.sellers_df = pd.DataFrame()
         self.market_df = pd.DataFrame()
         # store price range of a market cycle
-        self.min_price = min_price
-        self.max_price = max_price
+        self.min_price = None
+        self.max_price = None
 
         for i in range(1, num_buyer+1):
             b=Buyer(env, "Buyer n.%d" % i, self)
