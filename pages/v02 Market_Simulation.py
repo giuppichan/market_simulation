@@ -3,7 +3,7 @@
 
 # developments related this version
 # 1) web deployment
-# 2) parameters added
+# 2) parameters added as a class
 
 import streamlit as st
 import pandas as pd
@@ -17,9 +17,9 @@ class Buyer(object):
     def __init__ (self, env, name, market):
         self.env, self.name = env, name
         self.market = market
-        self.consumption = random.randint(1, 20)
+        self.consumption = random.randint(self.market.config.buyer_min_qty, self.market.config.buyer_max_qty)
         self.quantity = 0
-        self.price = random.randint(self.market.initial_parameters["min_price"], self.market.initial_parameters["max_price"])
+        self.price = random.randint(self.market.config.buyer_min_price, self.market.config.buyer_max_price)
         self.action = env.process(self.consume())  # adding grow to env processes. its schedule is determined by yield in the consume function
         
     def status(self):
@@ -45,9 +45,9 @@ class Seller(object):
     def __init__ (self, env, name, market):
         self.env, self.name = env, name
         self.market = market
-        self.production = random.randint(1, 20)
+        self.production = random.randint(self.market.config.seller_min_qty, self.market.config.seller_max_qty)
         self.quantity = 0
-        self.price = random.randint(self.market.initial_parameters["min_price"], self.market.initial_parameters["max_price"])
+        self.price = random.randint(self.market.config.seller_min_price, self.market.config.seller_max_price)
         self.action = env.process(self.grow()) # adding grow to env processes. its schedule is determined by yield in the grow function
 
     def status(self):
@@ -68,19 +68,29 @@ class Seller(object):
             self.quantity = self.production
             yield self.env.timeout(1)
             
+
+@dataclass
+class MarketConfig:
+    num_buyer: int
+    num_seller: int
+    buyer_min_price: int
+    buyer_max_price: int
+    buyer_min_qty: int
+    buyer_max_qty: int
+    seller_min_price: int
+    seller_max_price: int
+    seller_min_qty: int
+    seller_max_qty: int
+
 class Market (object):
-    def __init__ (self, env, num_buyer, num_seller, min_price, max_price):
+    def __init__ (self, env, config: MarketConfig):
         self.env = env
+        self.config = config
         self.buyers_list = []
         self.sellers_list = []
         self.buyers_df = pd.DataFrame()
         self.sellers_df = pd.DataFrame()
         self.market_df = pd.DataFrame()
-        # initial parameters needed to reset min and max prices every market cycle
-        # it's used to set buyer and seller initial price
-        self.initial_parameters = {
-            "min_price": min_price,
-            "max_price": max_price}
         # store price range of a market cycle
         self.min_price = min_price
         self.max_price = max_price
@@ -109,8 +119,8 @@ class Market (object):
         while True:
             random.shuffle(self.buyers_list)
             random.shuffle(self.sellers_list)
-            self.min_price=None # self.initial_parameters["min_price"]
-            self.max_price=None # self.initial_parameters["max_price"]
+            self.min_price=None
+            self.max_price=None
             
             for s in self.sellers_list:
                 for b in self.buyers_list:
@@ -156,15 +166,12 @@ class Market (object):
 # st.set_page_config(layout="wide")
 st.title("Market simulation")
 st.write("This is the baseline market simulation. The dynamics work as follows:")
-st.write("- Each **Seller** produces a random quantity within the selected range, each **Buyer** has a demand within the selected range.")
-st.write("- The **price range** defines the initial offered price for Sellers and the initial payable price for Buyers.")
+st.write("- **Seller** and **Buyer** quantity and price ranges are enterable")
 st.write("During each turn:")
 st.write("- Buyers and Sellers with a positive quantity (or demand) are randomly matched.")
 st.write("- If a Seller’s offered price is **lower than or equal to** a Buyer’s payable price, a transaction occurs.")
 st.write("- The Buyer purchases as much as possible, up to the Seller’s available quantity and the Buyer’s remaining demand.")
-st.write("After each turn:")
-st.write("- Every Seller replenishes their production.")
-st.write("- Every Buyer replenishes their demand.")
+st.write("After each turn Every Seller replenishes their production and Every Buyer replenishes their demand.")
 st.write("Price adjustment rules:")
 st.write("- A **Buyer** whose demand was not fully satisfied increases its payable price by 1, up to the maximum market price.")
 st.write("- A **Seller** with leftover stock decreases its offered price by 1, down to the minimum market price.")
@@ -172,11 +179,12 @@ st.write("- A **Seller** with leftover stock decreases its offered price by 1, d
 num_seller = st.number_input(
     "Number of sellers", min_value=1, max_value=50, value=10  )
 seller_min_quantity, seller_max_quantity = st.slider("Seller Quantity Range", min_value=1, max_value=100, value=(25, 75), step=1, key="seller_quantity_range")
+seller_min_price, seller_max_price = st.slider("Seller Price Range", min_value=1, max_value=100, value=(25, 75), step=1, key="seller_price_range")
 
 num_buyer = st.number_input(
     "Number of buyers", min_value=1, max_value=50, value=10  )
-
-min_price, max_price = st.slider("Price Range", min_value=1, max_value=100, value=(25, 75), step=1, key="price_range")
+buyer_min_quantity, buyer_max_quantity = st.slider("Buyer Quantity Range", min_value=1, max_value=100, value=(25, 75), step=1, key="buyer_quantity_range")
+buyer_min_price, buyer_max_price = st.slider("Buyer Price Range", min_value=1, max_value=100, value=(25, 75), step=1, key="buyer_price_range")
 
 num_iteration = st.number_input(
     "Number of market iterations", min_value=1, max_value=200, value=50  )
@@ -184,7 +192,21 @@ num_iteration = st.number_input(
 start = st.button("Start Market Simulation")
 if start:
     env = simpy.Environment()
-    m = Market(env, num_buyer, num_seller, min_price, max_price)
+
+    cfg = MarketConfig(
+        num_buyer=num_buyer,
+        num_seller=num_seller,
+        buyer_min_price=buyer_min_price,
+        buyer_max_price=buyer_max_price,
+        buyer_min_qty=buyer_min_qty,
+        buyer_max_qty=buyer_max_qty,
+        seller_min_price=seller_min_price,
+        seller_max_price=seller_max_price,
+        seller_min_qty=seller_min_qty,
+        seller_max_qty=seller_max_qty,
+    )
+
+    m = Market(env, cfg)
 
     chart_placeholder = st.empty()
     for step in range(1, num_iteration + 1):
