@@ -17,7 +17,7 @@ class Buyer(object):
     def __init__ (self, env, name, market):
         self.env, self.name = env, name
         self.market = market
-        self.consumption = random.randint(self.market.config.buyer_min_qty, self.market.config.buyer_max_qty)
+        self.consumption = random.randint(self.market.config.buyer_min_quantity, self.market.config.buyer_max_quantity)
         self.quantity = 0
         self.price = random.randint(self.market.config.buyer_min_price, self.market.config.buyer_max_price)
         self.action = env.process(self.consume())  # adding grow to env processes. its schedule is determined by yield in the consume function
@@ -45,7 +45,7 @@ class Seller(object):
     def __init__ (self, env, name, market):
         self.env, self.name = env, name
         self.market = market
-        self.production = random.randint(self.market.config.seller_min_qty, self.market.config.seller_max_qty)
+        self.production = random.randint(self.market.config.seller_min_quantity, self.market.config.seller_max_quantity)
         self.quantity = 0
         self.price = random.randint(self.market.config.seller_min_price, self.market.config.seller_max_price)
         self.action = env.process(self.grow()) # adding grow to env processes. its schedule is determined by yield in the grow function
@@ -75,12 +75,12 @@ class MarketConfig:
     num_seller: int
     buyer_min_price: int
     buyer_max_price: int
-    buyer_min_qty: int
-    buyer_max_qty: int
+    buyer_min_quantity: int
+    buyer_max_quantity: int
     seller_min_price: int
     seller_max_price: int
-    seller_min_qty: int
-    seller_max_qty: int
+    seller_min_quantity: int
+    seller_max_quantity: int
 
 class Market (object):
     def __init__ (self, env, config: MarketConfig):
@@ -198,12 +198,12 @@ if start:
         num_seller=num_seller,
         buyer_min_price=buyer_min_price,
         buyer_max_price=buyer_max_price,
-        buyer_min_qty=buyer_min_qty,
-        buyer_max_qty=buyer_max_qty,
+        buyer_min_quantity=buyer_min_quantity,
+        buyer_max_quantity=buyer_max_quantity,
         seller_min_price=seller_min_price,
         seller_max_price=seller_max_price,
-        seller_min_qty=seller_min_qty,
-        seller_max_qty=seller_max_qty,
+        seller_min_quantity=seller_min_quantity,
+        seller_max_quantity=seller_max_quantity,
     )
 
     m = Market(env, cfg)
