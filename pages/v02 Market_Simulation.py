@@ -39,7 +39,7 @@ class Buyer(object):
                     self.price = random.randint(self.price, self.market.max_price)
             self.quantity = 0 # no stock
 
-            yield self.env.timeout(1) # optional, priority can be added heere to set manually the order of execution
+            yield self.env.timeout(1, priority=0) # optional, priority can be added heere to set manually the order of execution
     
 class Seller(object):
     def __init__ (self, env, name, market):
@@ -66,7 +66,7 @@ class Seller(object):
                 if self.price > self.market.config.seller_min_price:
                     self.price = random.randint(self.market.min_price, self.price)
             self.quantity = self.production
-            yield self.env.timeout(1)
+            yield self.env.timeout(1, priority=0)
             
 
 @dataclass
@@ -160,7 +160,7 @@ class Market (object):
                 pd.DataFrame([s.status() for s in self.sellers_list])
                 ], ignore_index=True)
 
-            yield self.env.timeout(1)
+            yield self.env.timeout(1, priority=1)
 
 
 # st.set_page_config(layout="wide")
