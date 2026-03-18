@@ -32,9 +32,10 @@ class Buyer(object):
         
     def consume(self):
         while True:
+            print("consume {self.env.now}")
             if self.quantity < self.consumption: # cound not satisfy demand
                 self.price += 1
-                print(f"consume self.price: {self.price}  self.market.min_price: {self.market.min_price}")
+                print(f"  consume self.price: {self.price}  self.market.min_price: {self.market.min_price}")
                 if self.price < self.market.min_price:
                     self.price = random.randint(self.market.min_price, self.market.max_price)
             self.quantity = 0 # no stock
@@ -61,9 +62,10 @@ class Seller(object):
         
     def grow(self):
         while True:
+            print("grow {self.env.now}")
             if self.quantity > 0: #could not sell everything
                 self.price -= 1
-                print(f"grow self.price {self.price} self.market.max_price {self.market.max_price}")
+                print(f"  grow self.price {self.price} self.market.max_price {self.market.max_price}")
                 if self.price > self.market.max_price:
                     self.price = random.randint(self.market.min_price, self.market.max_price)
             self.quantity = self.production
@@ -118,6 +120,7 @@ class Market (object):
     def trade(self): # goods exchange
 
         while True:
+            print(f"market {self.env.now}")
             random.shuffle(self.buyers_list)
             random.shuffle(self.sellers_list)
             self.min_price=None
@@ -125,6 +128,7 @@ class Market (object):
             
             for s in self.sellers_list:
                 for b in self.buyers_list:
+                    print("s.quantity:{s.quantity} b.consumption:{b.consumption} b.quantity:{b.quantity} b.price:{b.price} s.price:{s.price}")
                     while (s.quantity>0) and (b.consumption-b.quantity>0) and (b.price>=s.price): # conditions to make the deal
 
                         traded_quantity = min(s.quantity, b.consumption-b.quantity)
