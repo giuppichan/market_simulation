@@ -32,6 +32,7 @@ class Buyer(object):
         
     def consume(self):
         while True:
+            yield self.env.timeout(1, priority=1)
             print(f"consume {self.env.now}")
             if self.quantity < self.consumption: # cound not satisfy demand
                 self.price += 1
@@ -40,7 +41,6 @@ class Buyer(object):
                     self.price = random.randint(self.market.min_price, self.market.max_price)
             self.quantity = 0 # no stock
 
-            yield self.env.timeout(1, priority=1) # optional, priority can be added heere to set manually the order of execution
     
 class Seller(object):
     def __init__ (self, env, name, market):
@@ -62,6 +62,7 @@ class Seller(object):
         
     def grow(self):
         while True:
+            yield self.env.timeout(1, priority=2)
             print(f"grow {self.env.now}")
             if self.quantity > 0: #could not sell everything
                 self.price -= 1
@@ -69,7 +70,6 @@ class Seller(object):
                 if self.price > self.market.max_price:
                     self.price = random.randint(self.market.min_price, self.market.max_price)
             self.quantity = self.production
-            yield self.env.timeout(1, priority=2)
             
 
 @dataclass
@@ -118,9 +118,9 @@ class Market (object):
         print('market created')
         
     def trade(self): # goods exchange
-
         while True:
-            print(f"market {self.env.now}")
+            yield self.env.timeout(1, priority=0)
+            print(f"trade {self.env.now}")
             random.shuffle(self.buyers_list)
             random.shuffle(self.sellers_list)
             self.min_price=None
@@ -128,7 +128,7 @@ class Market (object):
             
             for s in self.sellers_list:
                 for b in self.buyers_list:
-                    print(f"  s.quantity:{s.quantity} b.consumption:{b.consumption} b.quantity:{b.quantity} b.price:{b.price} s.price:{s.price}")
+                    print(f"  trade s.quantity:{s.quantity} b.consumption:{b.consumption} b.quantity:{b.quantity} b.price:{b.price} s.price:{s.price}")
                     while (s.quantity>0) and (b.consumption-b.quantity>0) and (b.price>=s.price): # conditions to make the deal
 
                         traded_quantity = min(s.quantity, b.consumption-b.quantity)
@@ -164,9 +164,8 @@ class Market (object):
                 self.sellers_df, 
                 pd.DataFrame([s.status() for s in self.sellers_list])
                 ], ignore_index=True)
+            print(f"  trade self.min_price: {self.min_price} self.max_price: {self.max_price}")
 
-            print(f"market.min_price: {self.min_price} market.max_price: {self.max_price}")
-            yield self.env.timeout(1, priority=0)
 
 
 # st.set_page_config(layout="wide")
