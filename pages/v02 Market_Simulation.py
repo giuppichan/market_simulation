@@ -34,6 +34,7 @@ class Buyer(object):
         while True:
             if self.quantity < self.consumption: # cound not satisfy demand
                 self.price += 1
+                print(f"self.price: {self.price}  self.market.min_price: {self.market.min_price}"
                 if self.price < self.market.min_price:
                     self.price = random.randint(self.market.min_price, self.market.max_price)
             self.quantity = 0 # no stock
@@ -62,6 +63,7 @@ class Seller(object):
         while True:
             if self.quantity > 0: #could not sell everything
                 self.price -= 1
+                print(f"self.price {self.price} self.market.max_price {self.market.max_price}")
                 if self.price > self.market.max_price:
                     self.price = random.randint(self.market.min_price, self.market.max_price)
             self.quantity = self.production
