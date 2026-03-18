@@ -15,8 +15,7 @@ from dataclasses import dataclass
 
 class Buyer(object):
     def __init__ (self, env, name, market):
-        self.env, self.name = env, name
-        self.market = market
+        self.env, self.name, self.market = env, name, market
         self.consumption = random.randint(self.market.config.buyer_min_quantity, self.market.config.buyer_max_quantity)
         self.quantity = 0
         self.price = random.randint(self.market.config.buyer_min_price, self.market.config.buyer_max_price)
@@ -35,8 +34,8 @@ class Buyer(object):
         while True:
             if self.quantity < self.consumption: # cound not satisfy demand
                 self.price += 1
-                if self.price < self.market.config.buyer_max_price:
-                    self.price = random.randint(self.price, self.market.max_price)
+                if self.price < self.market.min_price:
+                    self.price = random.randint(self.market.min_price, self.market.max_price)
             self.quantity = 0 # no stock
 
             yield self.env.timeout(1, priority=0) # optional, priority can be added heere to set manually the order of execution
@@ -63,8 +62,8 @@ class Seller(object):
         while True:
             if self.quantity > 0: #could not sell everything
                 self.price -= 1
-                if self.price > self.market.config.seller_min_price:
-                    self.price = random.randint(self.market.min_price, self.price)
+                if self.price > self.market.max_price:
+                    self.price = random.randint(self.market.min_price, self.market.max_price)
             self.quantity = self.production
             yield self.env.timeout(1, priority=0)
             
@@ -96,19 +95,19 @@ class Market (object):
         self.max_price = None
 
         for i in range(1, self.config.num_buyer+1):
-            b=Buyer(env, "Buyer n.%d" % i, self)
+            b=Buyer(env, f"Buyer n.{i}" % i, self)
             self.buyers_list.append(b)
-            self.buyers_df = pd.concat([
-                self.buyers_df, pd.DataFrame.from_dict([b.status()])
-                ], ignore_index=True)
+            self.buyers_df = pd.concat(
+                [self.buyers_df, pd.DataFrame.from_dict([b.status()])], 
+                ignore_index=True)
         print("buyers created")
         
         for i in range(1, self.config.num_seller+1):
-            s=Seller(env, "Seller n.%d" % i, self)
+            s=Seller(env, f"Seller n.{i}", self)
             self.sellers_list.append(s)
-            self.sellers_df = pd.concat([
-                self.sellers_df, pd.DataFrame.from_dict([s.status()])
-                ], ignore_index=True)
+            self.sellers_df = pd.concat(
+                [self.sellers_df, pd.DataFrame.from_dict([s.status()])], 
+                ignore_index=True)
         print("sellers created")
 
         self.action = env.process(self.trade())
@@ -124,7 +123,7 @@ class Market (object):
             
             for s in self.sellers_list:
                 for b in self.buyers_list:
-                    while (s.quantity>0) & (b.consumption-b.quantity>0) & (b.price>=s.price): # conditions to make the deal
+                    while (s.quantity>0) and (b.consumption-b.quantity>0) and (b.price>=s.price): # conditions to make the deal
 
                         traded_quantity = min(s.quantity, b.consumption-b.quantity)
                         deal_price = random.randint(s.price, b.price)
