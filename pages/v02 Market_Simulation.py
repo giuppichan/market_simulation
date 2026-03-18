@@ -95,7 +95,7 @@ class Market (object):
         self.max_price = None
 
         for i in range(1, self.config.num_buyer+1):
-            b=Buyer(env, f"Buyer n.{i}" % i, self)
+            b=Buyer(env, f"Buyer n.{i}", self)
             self.buyers_list.append(b)
             self.buyers_df = pd.concat(
                 [self.buyers_df, pd.DataFrame.from_dict([b.status()])], 
