@@ -34,7 +34,7 @@ class Buyer(object):
         while True:
             if self.quantity < self.consumption: # cound not satisfy demand
                 self.price += 1
-                print(f"self.price: {self.price}  self.market.min_price: {self.market.min_price}"
+                print(f"consume self.price: {self.price}  self.market.min_price: {self.market.min_price}")
                 if self.price < self.market.min_price:
                     self.price = random.randint(self.market.min_price, self.market.max_price)
             self.quantity = 0 # no stock
@@ -63,7 +63,7 @@ class Seller(object):
         while True:
             if self.quantity > 0: #could not sell everything
                 self.price -= 1
-                print(f"self.price {self.price} self.market.max_price {self.market.max_price}")
+                print(f"grow self.price {self.price} self.market.max_price {self.market.max_price}")
                 if self.price > self.market.max_price:
                     self.price = random.randint(self.market.min_price, self.market.max_price)
             self.quantity = self.production
@@ -161,7 +161,7 @@ class Market (object):
                 pd.DataFrame([s.status() for s in self.sellers_list])
                 ], ignore_index=True)
 
-            print (f" market.min_price: {self.min_price} market.max_price: {self.max_price}")
+            print(f"market.min_price: {self.min_price} market.max_price: {self.max_price}")
             yield self.env.timeout(1, priority=0)
 
 
