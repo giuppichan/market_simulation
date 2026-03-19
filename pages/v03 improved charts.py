@@ -254,7 +254,52 @@ if start:
                 height=400,
                 title="Trades over Time (bubble size = quantity)"
                 )
-            )        
-
+            )
         chart_placeholder.altair_chart(bubble, use_container_width=True)
+
+
+buyer_unmet = m.buyers_df.assign(
+    time=lambda d: d["time"].astype(int),
+    unmet=lambda d: (d["quantity"] - d["consumption"])
+    ).groupby("time", as_index=False)["unmet"].sum()
+
+seller_surplus = m.sellers_df.assign(
+    time=lambda d: d["time"].astype(int),
+    surplus=lambda d: d["quantity"]
+    ).groupby("time", as_index=False)["quantity"].sum()
+
+long = (buyer_unmet.merge(seller_surplus, on="time", how="outer")).melt(
+    id_vars="time",
+    value_vars=["unmet", "surplus"],
+    var_name="metric",
+    value_name="value")
+
+
+combined_area = (
+    alt.Chart(long)
+    .mark_area(opacity=0.4)
+    .encode(
+        x=alt.X("time:Q", title="Time (steps)"),
+        y=alt.Y("value:Q",
+                title="Quantity",
+                scale=alt.Scale(zero=True)),    # ensures x-axis at 0
+        color=alt.Color("metric:N",
+                        title="",
+                        scale=alt.Scale(
+                            domain=["surplus", "unmet"],
+                            range=["#4CAF50", "#F44336"]  # green / red
+                        )),
+        tooltip=["time:Q", "metric:N", "value:Q"]
+    )
+    .properties(
+        width="container",
+        height=350,
+        title="Seller Surplus (positive) vs Unmet Demand (negative)"
+    )
+)
+
+chart_placeholder.altair_chart(combined_area, use_container_width=True)
+
+
         
+
