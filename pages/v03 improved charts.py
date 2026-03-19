@@ -178,8 +178,6 @@ class Market (object):
         print(f"  self.min_price:{self.min_price} self.max_price:{self.max_price}")
 
 
-
-# st.set_page_config(layout="wide")
 st.title("Market simulation")
 st.write("The dynamics work as v02. Charts improved")
 
@@ -258,49 +256,45 @@ if start:
         chart_placeholder_1.altair_chart(bubble)
 
 
-chart_placeholder_2 = st.empty()
-buyer_unmet = m.buyers_df.assign(
-    time=lambda d: d["time"].astype(int),
-    unmet=lambda d: (d["quantity"] - d["consumption"])
-    ).groupby("time", as_index=False)["unmet"].sum()
+    chart_placeholder_2 = st.empty()
+    buyer_unmet = m.buyers_df.assign(
+        time=lambda d: d["time"].astype(int),
+        unmet=lambda d: (d["quantity"] - d["consumption"])
+        ).groupby("time", as_index=False)["unmet"].sum()
 
-seller_surplus = m.sellers_df.assign(
-    time=lambda d: d["time"].astype(int),
-    surplus=lambda d: d["quantity"]
-    ).groupby("time", as_index=False)["quantity"].sum()
+    seller_surplus = m.sellers_df.assign(
+        time=lambda d: d["time"].astype(int),
+        surplus=lambda d: d["quantity"]
+        ).groupby("time", as_index=False)["quantity"].sum()
 
-unmet_surplus = (buyer_unmet.merge(seller_surplus, on="time", how="outer")).fillna(0)
-unmet_surplus_long = unmet_surplus.melt(
-    id_vars="time",
-    value_vars=["unmet", "surplus"],
-    var_name="metric",
-    value_name="value"
-)
+    unmet_surplus = (buyer_unmet.merge(seller_surplus, on="time", how="outer")).fillna(0)
+    unmet_surplus_long = unmet_surplus.melt(
+        id_vars="time",
+        value_vars=["unmet", "surplus"],
+        var_name="metric",
+        value_name="value"
+    )
 
-combined_area = (
-    alt.Chart(unmet_surplus_long)
-    .mark_area(opacity=0.4)
-    .encode(
-        x=alt.X("time:Q", title="Time (steps)"),
-        y=alt.Y("value:Q",
+    combined_area = (
+        alt.Chart(unmet_surplus_long)
+        .mark_area(opacity=0.4)
+        .encode(
+            x=alt.X("time:Q", title="Time (steps)"),
+            y=alt.Y("value:Q",
                 title="Quantity",
                 scale=alt.Scale(zero=True)),    # ensures x-axis at 0
-        color=alt.Color("metric:N",
+            color=alt.Color("metric:N",
                         title="",
                         scale=alt.Scale(
                             domain=["surplus", "unmet"],
                             range=["#4CAF50", "#F44336"]  # green / red
                         )),
-        tooltip=["time:Q", "metric:N", "value:Q"]
+            tooltip=["time:Q", "metric:N", "value:Q"]
+        )
+        .properties(
+            width="container",
+            height=350,
+            title="Seller Surplus (positive) vs Unmet Demand (negative)"
+        )
     )
-    .properties(
-        width="container",
-        height=350,
-        title="Seller Surplus (positive) vs Unmet Demand (negative)"
-    )
-)
-chart_placeholder_2.altair_chart(combined_area)
-
-
-        
-
+    chart_placeholder_2.altair_chart(combined_area)
