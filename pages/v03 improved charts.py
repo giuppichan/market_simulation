@@ -236,7 +236,7 @@ if start:
                     size=alt.Size(
                         "traded_quantity:Q",
                         title="Traded quantity",
-                        scale=alt.Scale(range=[5, 200])  # adjust bubble size range to taste
+                        scale=alt.Scale(range=[5, 500])  # adjust bubble size range to taste
                     ),
                 tooltip=[
                         alt.Tooltip("time:Q", title="Time"),
