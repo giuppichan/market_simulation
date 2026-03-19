@@ -232,13 +232,12 @@ if start:
                     )
                 .encode(
                     x=alt.X("time:Q", title="Time (steps)"),
-                    y=alt.Y("price:Q", title="Price"),
+                    y=alt.Y("price:Q", title="Price", scale=alt.Scale(zero=False)),
                     size=alt.Size(
                         "traded_quantity:Q",
                         title="Traded quantity",
                         scale=alt.Scale(range=[20, 300])  # adjust bubble size range to taste
                     ),
-#                color=alt.Color("seller:N", legend=alt.Legend(title="Seller"), sort=None),  # or "buyer:N"
                 tooltip=[
                         alt.Tooltip("time:Q", title="Time"),
                         alt.Tooltip("buyer:N", title="Buyer"),
