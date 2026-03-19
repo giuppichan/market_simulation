@@ -43,7 +43,7 @@ class Seller(object):
         self.env, self.name = env, name
         self.market = market
         self.production = random.randint(self.market.config.seller_min_quantity, self.market.config.seller_max_quantity)
-        self.quantity = 0
+        self.quantity = self.production
         self.price = random.randint(self.market.config.seller_min_price, self.market.config.seller_max_price)
 
     def status(self):
