@@ -133,8 +133,8 @@ class Market (object):
         transactions_list = []
         for s in self.sellers_list:
             for b in self.buyers_list:
-                # print(f"  trade s.quantity:{s.quantity} b.consumption:{b.consumption} b.quantity:{b.quantity} b.price:{b.price} s.price:{s.price}")
-                while (s.quantity>0) and (b.consumption-b.quantity>0) and (b.price>=s.price): # conditions to make the deal
+                print(f"  trade s.quantity:{s.quantity} b.consumption-b.quantity:{b.consumption-b.quantity} b.price:{b.price} s.price:{s.price}")
+                if (s.quantity>0) and (b.consumption-b.quantity>0) and (b.price>=s.price): # conditions to make the deal
                     traded_quantity = min(s.quantity, b.consumption-b.quantity)
                     deal_price = random.randint(s.price, b.price)
                     s.quantity -= traded_quantity
