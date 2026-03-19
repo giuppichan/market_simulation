@@ -265,7 +265,7 @@ if start:
     seller_surplus = m.sellers_df.assign(
         time=lambda d: d["time"].astype(int),
         surplus=lambda d: d["quantity"]
-        ).groupby("time", as_index=False)["quantity"].sum()
+        ).groupby("time", as_index=False)["surplus"].sum()
 
     unmet_surplus = (buyer_unmet.merge(seller_surplus, on="time", how="outer")).fillna(0)
     unmet_surplus_long = unmet_surplus.melt(
