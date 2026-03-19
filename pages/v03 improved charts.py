@@ -133,7 +133,7 @@ class Market (object):
         transactions_list = []
         for s in self.sellers_list:
             for b in self.buyers_list:
-                # print(f"  trade s.quantity:{s.quantity} b.consumption-b.quantity:{b.consumption-b.quantity} b.price:{b.price} s.price:{s.price}")
+                print(f"  trade s.quantity:{s.quantity} b.consumption-b.quantity:{b.consumption-b.quantity} b.price:{b.price} s.price:{s.price}")
                 if (s.quantity>0) and (b.consumption-b.quantity>0) and (b.price>=s.price): # conditions to make the deal
                     traded_quantity = min(s.quantity, b.consumption-b.quantity)
                     deal_price = random.randint(s.price, b.price)
@@ -151,7 +151,7 @@ class Market (object):
                         "max_price": self.max_price,
                         })
                     
-                    # print(f"  deal_price:{deal_price} self.min_price:{self.min_price} self.max_price:{self.max_price}")
+                    print(f"  deal_price:{deal_price} self.min_price:{self.min_price} self.max_price:{self.max_price}")
                     if (self.min_price is None) or (deal_price < self.min_price):
                         print(f"  in min_price")
                         self.min_price=deal_price
@@ -183,15 +183,18 @@ class Market (object):
 st.title("Market simulation")
 st.write("The dynamics work as v02. Charts improved")
 
-num_seller = st.number_input("Number of sellers", min_value=1, max_value=50, value=10 )
+num_seller = st.number_input(
+    "Number of sellers", min_value=1, max_value=50, value=10  )
 seller_min_quantity, seller_max_quantity = st.slider("Seller Quantity Range", min_value=1, max_value=100, value=(25, 75), step=1, key="seller_quantity_range")
 seller_min_price, seller_max_price = st.slider("Seller Price Range", min_value=1, max_value=100, value=(25, 75), step=1, key="seller_price_range")
 
-num_buyer = st.number_input("Number of buyers", min_value=1, max_value=50, value=10 )
+num_buyer = st.number_input(
+    "Number of buyers", min_value=1, max_value=50, value=10  )
 buyer_min_quantity, buyer_max_quantity = st.slider("Buyer Quantity Range", min_value=1, max_value=100, value=(25, 75), step=1, key="buyer_quantity_range")
 buyer_min_price, buyer_max_price = st.slider("Buyer Price Range", min_value=1, max_value=100, value=(25, 75), step=1, key="buyer_price_range")
 
-num_iteration = st.number_input("Number of market iterations", min_value=1, max_value=200, value=50 )
+num_iteration = st.number_input(
+    "Number of market iterations", min_value=1, max_value=200, value=50  )
 
 start = st.button("Start Market Simulation")
 if start:
@@ -219,7 +222,7 @@ if start:
         bubble = (
             alt.Chart(m.market_df)
                 .mark_circle(
-                    opacity=0.25,   # transparent bubbles
+                    opacity=0.35,   # transparent bubbles
                     stroke='black', # thin outline helps visibility
                     strokeWidth=0.3
                     )
@@ -229,9 +232,9 @@ if start:
                     size=alt.Size(
                         "traded_quantity:Q",
                         title="Traded quantity",
-                        scale=alt.Scale(range=[20, 300])  # adjust bubble size range to taste
+                        scale=alt.Scale(range=[20, 700])  # adjust bubble size range to taste
                     ),
-                color="grey", # alt.Color("seller:N", legend=alt.Legend(title="Seller"), sort=None),  # or "buyer:N"
+                color=alt.Color("seller:N", legend=alt.Legend(title="Seller"), sort=None),  # or "buyer:N"
                 tooltip=[
                         alt.Tooltip("time:Q", title="Time"),
                         alt.Tooltip("buyer:N", title="Buyer"),
