@@ -227,12 +227,10 @@ if start:
                 .mark_circle(
                     opacity=0.2,   # transparent bubbles
                     color="grey",      # <-- all bubbles grey
-#                    stroke='black', # thin outline helps visibility
-#                    strokeWidth=0.2
                     )
                 .encode(
                     x=alt.X("time:Q", title="Time (steps)"),
-                    y=alt.Y("price:Q", title="Price", scale=alt.Scale(zero=False)),
+                    y=alt.Y("price:Q", title="Price", scale=alt.Scale(zero=False, nice=True)),
                     size=alt.Size(
                         "traded_quantity:Q",
                         title="Traded quantity",
