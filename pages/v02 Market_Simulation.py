@@ -31,15 +31,13 @@ class Buyer(object):
             })
         
     def consume(self):
-        while True:
-            yield self.env.timeout(1, priority=1)
-            print(f"consume {self.env.now}")
-            if self.quantity < self.consumption: # cound not satisfy demand
-                self.price += 1
-                print(f"  consume self.price: {self.price}  self.market.min_price: {self.market.min_price}")
-                if self.price < self.market.min_price:
-                    self.price = random.randint(self.market.min_price, self.market.max_price)
-            self.quantity = 0 # no stock
+        print(f"consume {self.env.now}")
+        if self.quantity < self.consumption: # cound not satisfy demand
+            self.price += 1
+            print(f"  consume self.price: {self.price}  self.market.min_price: {self.market.min_price}")
+            if self.price < self.market.min_price:
+                self.price = random.randint(self.market.min_price, self.market.max_price)
+        self.quantity = 0 # no stock
 
     
 class Seller(object):
@@ -61,17 +59,14 @@ class Seller(object):
             })
         
     def grow(self):
-        while True:
-            yield self.env.timeout(1, priority=2)
-            print(f"grow {self.env.now}")
-            if self.quantity > 0: #could not sell everything
-                self.price -= 1
-                print(f"  grow self.price {self.price} self.market.max_price {self.market.max_price}")
-                if self.price > self.market.max_price:
-                    self.price = random.randint(self.market.min_price, self.market.max_price)
-            self.quantity = self.production
+        print(f"grow {self.env.now}")
+        if self.quantity > 0: #could not sell everything
+            self.price -= 1
+            print(f"  grow self.price {self.price} self.market.max_price {self.market.max_price}")
+            if self.price > self.market.max_price:
+                self.price = random.randint(self.market.min_price, self.market.max_price)
+        self.quantity = self.production
             
-
 @dataclass
 class MarketConfig:
     num_buyer: int
@@ -114,57 +109,72 @@ class Market (object):
                 ignore_index=True)
         print("sellers created")
 
-        self.action = env.process(self.trade())
+        self.action = env.process(self.run())
         print('market created')
         
-    def trade(self): # goods exchange
+    def run(self): # Master scheduler to execute the process in a specific order
         while True:
-            yield self.env.timeout(1, priority=0)
             print(f"trade {self.env.now}")
-            random.shuffle(self.buyers_list)
-            random.shuffle(self.sellers_list)
-            self.min_price=None
-            self.max_price=None
-            
+            self.trade()  # trade() sets min_price and max_price
+
+            print(f"consume {self.env.now}")
+            for b in self.buyers_list:
+                b.consume()
+
+            print(f"grow {self.env.now}")
             for s in self.sellers_list:
-                for b in self.buyers_list:
-                    print(f"  trade s.quantity:{s.quantity} b.consumption:{b.consumption} b.quantity:{b.quantity} b.price:{b.price} s.price:{s.price}")
-                    while (s.quantity>0) and (b.consumption-b.quantity>0) and (b.price>=s.price): # conditions to make the deal
+                s.grow()
 
-                        traded_quantity = min(s.quantity, b.consumption-b.quantity)
-                        deal_price = random.randint(s.price, b.price)
-                        s.quantity -= traded_quantity
-                        b.quantity += traded_quantity
-                        s.price, b.price = deal_price, deal_price
-                        
-                        if (self.min_price is None) or (deal_price < self.min_price):
-                            self.min_price=deal_price
-                        if (self.max_price is None) or (deal_price > self.max_price):
-                            self.max_price=deal_price
-                        
-                        self.market_df = pd.concat([ # log the transactions
-                            self.market_df, pd.DataFrame.from_dict([{
-                                "time":self.env.now,
-                                "buyer":b.name,
-                                "seller":s.name,
-                                "traded_quantity":traded_quantity,
-                                "price":deal_price,
-                                "min_price":self.min_price,
-                                "max_price":self.max_price,
-                                }])
-                            ], ignore_index=True)
+            print(f"done step {self.env.now}")
+            yield self.env.timeout(1.0)
 
-            # log sellers and buyers status after the trade took place
-            self.buyers_df = pd.concat([
-                self.buyers_df, 
-                pd.DataFrame([b.status() for b in self.buyers_list])
-                ], ignore_index=True)
+    def trade(self): # goods exchange
+        random.shuffle(self.buyers_list)
+        random.shuffle(self.sellers_list)
+        self.min_price=None
+        self.max_price=None
             
-            self.sellers_df = pd.concat([
-                self.sellers_df, 
-                pd.DataFrame([s.status() for s in self.sellers_list])
-                ], ignore_index=True)
-            print(f"  trade self.min_price: {self.min_price} self.max_price: {self.max_price}")
+        transactions_list = []
+        for s in self.sellers_list:
+            for b in self.buyers_list:
+                print(f"  trade s.quantity:{s.quantity} b.consumption:{b.consumption} b.quantity:{b.quantity} b.price:{b.price} s.price:{s.price}")
+                while (s.quantity>0) and (b.consumption-b.quantity>0) and (b.price>=s.price): # conditions to make the deal
+                    traded_quantity = min(s.quantity, b.consumption-b.quantity)
+                    deal_price = random.randint(s.price, b.price)
+                    s.quantity -= traded_quantity
+                    b.quantity += traded_quantity
+                    s.price, b.price = deal_price, deal_price
+
+                    transaction_list.append({
+                        "time": self.env.now,
+                        "buyer": b.name,
+                        "seller": s.name,
+                        "traded_quantity": traded_quantity,
+                        "price": deal_price,
+                        "min_price": self.min_price,
+                        "max_price": self.max_price,
+                        })
+                    
+                    if (self.min_price is None) or (deal_price < self.min_price):
+                        self.min_price=deal_price
+                    if (self.max_price is None) or (deal_price > self.max_price):
+                        self.max_price=deal_price
+
+        # log after the trade took place
+        self.buyers_df = pd.concat([
+            self.buyers_df, 
+            pd.DataFrame([b.status() for b in self.buyers_list])
+            ], ignore_index=True)
+            
+        self.sellers_df = pd.concat([
+            self.sellers_df, 
+            pd.DataFrame([s.status() for s in self.sellers_list])
+            ], ignore_index=True)
+
+        self.market_df = pd.concat([
+            self.market_df, 
+            pd.DataFrame.from_records(transaction_list)
+            ], ignore_index=True)
 
 
 
