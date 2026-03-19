@@ -135,7 +135,7 @@ class Market (object):
         transactions_list = []
         for s in self.sellers_list:
             for b in self.buyers_list:
-                print(f"  trade s.quantity:{s.quantity} b.consumption:{b.consumption} b.quantity:{b.quantity} b.price:{b.price} s.price:{s.price}")
+                # print(f"  trade s.quantity:{s.quantity} b.consumption:{b.consumption} b.quantity:{b.quantity} b.price:{b.price} s.price:{s.price}")
                 while (s.quantity>0) and (b.consumption-b.quantity>0) and (b.price>=s.price): # conditions to make the deal
                     traded_quantity = min(s.quantity, b.consumption-b.quantity)
                     deal_price = random.randint(s.price, b.price)
@@ -143,7 +143,7 @@ class Market (object):
                     b.quantity += traded_quantity
                     s.price, b.price = deal_price, deal_price
 
-                    transaction_list.append({
+                    transactions_list.append({
                         "time": self.env.now,
                         "buyer": b.name,
                         "seller": s.name,
@@ -171,8 +171,10 @@ class Market (object):
 
         self.market_df = pd.concat([
             self.market_df, 
-            pd.DataFrame.from_records(transaction_list)
+            pd.DataFrame.from_records(transactions_list)
             ], ignore_index=True)
+
+        print(f"  self.min_price:{self.min_price} self.max_price:{self.max_price}")
 
 
 
