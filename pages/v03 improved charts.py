@@ -225,10 +225,10 @@ if start:
         bubble = (
             alt.Chart(m.market_df)
                 .mark_circle(
-                    opacity=0.25,   # transparent bubbles
+                    opacity=0.2,   # transparent bubbles
                     color="grey",      # <-- all bubbles grey
-                    stroke='black', # thin outline helps visibility
-                    strokeWidth=0.2
+#                    stroke='black', # thin outline helps visibility
+#                    strokeWidth=0.2
                     )
                 .encode(
                     x=alt.X("time:Q", title="Time (steps)"),
@@ -236,7 +236,7 @@ if start:
                     size=alt.Size(
                         "traded_quantity:Q",
                         title="Traded quantity",
-                        scale=alt.Scale(range=[20, 300])  # adjust bubble size range to taste
+                        scale=alt.Scale(range=[5, 200])  # adjust bubble size range to taste
                     ),
                 tooltip=[
                         alt.Tooltip("time:Q", title="Time"),
