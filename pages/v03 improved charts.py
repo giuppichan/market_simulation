@@ -223,7 +223,7 @@ if start:
     with col2:
         st.metric("Total Demand", f"{sum(b.consumption for b in m.buyers_list):,}")
 
-    chart_placeholder = st.empty()
+    chart_placeholder_1 = st.empty()
     for step in range(1, num_iteration + 1):
         env.run(until=step)
 
@@ -255,9 +255,10 @@ if start:
                 title="Trades over Time (bubble size = quantity)"
                 )
             )
-        chart_placeholder.altair_chart(bubble, use_container_width=True)
+        chart_placeholder_1.altair_chart(bubble)
 
 
+chart_placeholder_2 = st.empty()
 buyer_unmet = m.buyers_df.assign(
     time=lambda d: d["time"].astype(int),
     unmet=lambda d: (d["quantity"] - d["consumption"])
@@ -268,15 +269,16 @@ seller_surplus = m.sellers_df.assign(
     surplus=lambda d: d["quantity"]
     ).groupby("time", as_index=False)["quantity"].sum()
 
-long = (buyer_unmet.merge(seller_surplus, on="time", how="outer")).melt(
+unmet_surplus = (buyer_unmet.merge(seller_surplus, on="time", how="outer")).fillna(0)
+unmet_surplus_long = unmet_surplus.melt(
     id_vars="time",
     value_vars=["unmet", "surplus"],
     var_name="metric",
-    value_name="value")
-
+    value_name="value"
+)
 
 combined_area = (
-    alt.Chart(long)
+    alt.Chart(unmet_surplus_long)
     .mark_area(opacity=0.4)
     .encode(
         x=alt.X("time:Q", title="Time (steps)"),
@@ -297,8 +299,7 @@ combined_area = (
         title="Seller Surplus (positive) vs Unmet Demand (negative)"
     )
 )
-
-chart_placeholder.altair_chart(combined_area, use_container_width=True)
+chart_placeholder_2.altair_chart(combined_area)
 
 
         
