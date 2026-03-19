@@ -30,7 +30,6 @@ class Buyer(object):
             })
         
     def consume(self):
-        print(f"consume {self.env.now}")
         if self.quantity < self.consumption: # cound not satisfy demand
             self.price += 1
             print(f"  consume self.price: {self.price}  self.market.min_price: {self.market.min_price}")
@@ -57,7 +56,6 @@ class Seller(object):
             })
         
     def grow(self):
-        print(f"grow {self.env.now}")
         if self.quantity > 0: #could not sell everything
             self.price -= 1
             print(f"  grow self.price {self.price} self.market.max_price {self.market.max_price}")
@@ -153,9 +151,12 @@ class Market (object):
                         "max_price": self.max_price,
                         })
                     
+                    print(f"  deal_price:{deal_price} self.min_price:{self.min_price} self.max_price:{self.max_price}")
                     if (self.min_price is None) or (deal_price < self.min_price):
+                        print(f"  in min_price")
                         self.min_price=deal_price
                     if (self.max_price is None) or (deal_price > self.max_price):
+                        print(f"  in max_price")
                         self.max_price=deal_price
 
         # log after the trade took place
