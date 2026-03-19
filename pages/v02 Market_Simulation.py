@@ -19,7 +19,6 @@ class Buyer(object):
         self.consumption = random.randint(self.market.config.buyer_min_quantity, self.market.config.buyer_max_quantity)
         self.quantity = 0
         self.price = random.randint(self.market.config.buyer_min_price, self.market.config.buyer_max_price)
-        self.action = env.process(self.consume())  # adding grow to env processes. its schedule is determined by yield in the consume function
         
     def status(self):
         return({
@@ -47,7 +46,6 @@ class Seller(object):
         self.production = random.randint(self.market.config.seller_min_quantity, self.market.config.seller_max_quantity)
         self.quantity = 0
         self.price = random.randint(self.market.config.seller_min_price, self.market.config.seller_max_price)
-        self.action = env.process(self.grow()) # adding grow to env processes. its schedule is determined by yield in the grow function
 
     def status(self):
         return({
