@@ -181,16 +181,7 @@ class Market (object):
 
 # st.set_page_config(layout="wide")
 st.title("Market simulation")
-st.write("This is the baseline market simulation. The dynamics work as follows:")
-st.write("- **Seller** and **Buyer** quantity and price ranges are enterable")
-st.write("During each turn:")
-st.write("- Buyers and Sellers with a positive quantity (or demand) are randomly matched.")
-st.write("- If a Seller’s offered price is **lower than or equal to** a Buyer’s payable price, a transaction occurs.")
-st.write("- The Buyer purchases as much as possible, up to the Seller’s available quantity and the Buyer’s remaining demand.")
-st.write("After each turn Every Seller replenishes their production and Every Buyer replenishes their demand.")
-st.write("Price adjustment rules:")
-st.write("- A **Buyer** whose demand was not fully satisfied increases its payable price by 1, up to the maximum market price.")
-st.write("- A **Seller** with leftover stock decreases its offered price by 1, down to the minimum market price.")
+st.write("The dynamics work as v02. Charts improved")
 
 num_seller = st.number_input(
     "Number of sellers", min_value=1, max_value=50, value=10  )
@@ -228,21 +219,36 @@ if start:
     for step in range(1, num_iteration + 1):
         env.run(until=step)
 
-        # Build Altair chart
-        line_chart = (
-            alt.Chart(m.buyers_df)
-            .mark_line( # type of chart
-                color="grey")
-            .encode( # data link
-                x=alt.X("time:Q", title="Time (steps)"),
-                y=alt.Y("price:Q", title="Price"),
-                detail="name:N")   # <-- group by buyer name
+        bubble = (
+            alt.Chart(m.market_df)
+                .mark_circle(
+                    opacity=0.35,   # transparent bubbles
+                    stroke='black', # thin outline helps visibility
+                    strokeWidth=0.3
+                    )
+                .encode(
+                    x=alt.X("time:Q", title="Time (steps)"),
+                    y=alt.Y("price:Q", title="Price"),
+                    size=alt.Size(
+                        "traded_quantity:Q",
+                        title="Traded quantity",
+                        scale=alt.Scale(range=[20, 700])  # adjust bubble size range to taste
+                    ),
+                color=alt.Color("seller:N", legend=alt.Legend(title="Seller"), sort=None),  # or "buyer:N"
+                tooltip=[
+                        alt.Tooltip("time:Q", title="Time"),
+                        alt.Tooltip("buyer:N", title="Buyer"),
+                        alt.Tooltip("seller:N", title="Seller"),
+                        alt.Tooltip("traded_quantity:Q", title="Quantity"),
+                        alt.Tooltip("price:Q", title="Price"),
+                        ],
+                )
             .properties(
                 width="container",
                 height=400,
-                title="Buyer Prices and Market Average Over Time"
-            )
-        )
+                title="Trades over Time (bubble size = quantity)"
+                )
+            )        
 
-        # Update chart
-        chart_placeholder.altair_chart(line_chart, use_container_width=True)
+        chart_placeholder.altair_chart(bubble, use_container_width=True)
+        
