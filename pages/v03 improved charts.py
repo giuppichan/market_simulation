@@ -215,8 +215,13 @@ if start:
 
     m = Market(env, cfg)
 
-    st.metric("Total Demand", f"{sum(b.consumption for b in m.buyers_list):,}")
-    st.metric("Total Supply", f"{sum(s.production for s in m.sellers_list):,}")
+
+    st.subheader("Market results")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("Total Supply", f"{sum(s.production for s in m.sellers_list):,}")
+    with col2:
+        st.metric("Total Demand", f"{sum(b.consumption for b in m.buyers_list):,}")
 
     chart_placeholder = st.empty()
     for step in range(1, num_iteration + 1):
