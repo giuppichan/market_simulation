@@ -19,6 +19,7 @@ class Buyer(object):
         self.consumption = random.randint(self.market.config.buyer_min_quantity, self.market.config.buyer_max_quantity)
         self.quantity = 0
         self.price = random.randint(self.market.config.buyer_min_price, self.market.config.buyer_max_price)
+        self.delay = 0
         
     def status(self):
         return({
@@ -31,11 +32,14 @@ class Buyer(object):
         
     def consume(self):
         if self.quantity < self.consumption: # cound not satisfy demand
-            self.price += 1
+            self.delay += 1
+            self.price += self.delay
             # print(f"  consume self.price: {self.price}  self.market.min_price: {self.market.min_price}")
             if (self.market.min_price is not None) and (self.market.max_price is not None):
                 if self.price < self.market.min_price:
                     self.price = random.randint(self.market.min_price, self.market.max_price)
+        else:
+            self.delay = 0
         self.quantity = 0 # no stock
 
     
@@ -46,6 +50,7 @@ class Seller(object):
         self.production = random.randint(self.market.config.seller_min_quantity, self.market.config.seller_max_quantity)
         self.quantity = self.production
         self.price = random.randint(self.market.config.seller_min_price, self.market.config.seller_max_price)
+        self.delay = 0
 
     def status(self):
         return({
@@ -58,11 +63,14 @@ class Seller(object):
         
     def grow(self):
         if self.quantity > 0: #could not sell everything
-            self.price -= 1
+            self.delay += 1
+            self.price -= self.delay
             # print(f"  grow self.price {self.price} self.market.max_price {self.market.max_price}")
             if (self.market.min_price is not None) and (self.market.max_price is not None):
                 if self.price > self.market.max_price:
                     self.price = random.randint(self.market.min_price, self.market.max_price)
+        else:
+            self.delay = 0            
         self.quantity = self.production
             
 @dataclass
@@ -181,7 +189,7 @@ class Market (object):
 
 
 st.title("Market simulation")
-st.write("The dynamics work as v02. Charts improved")
+st.write("The number of turns with Buyer Unmet demand or Seller Surplus determines the price variation.")
 
 num_seller = st.number_input(
     "Number of sellers", min_value=1, max_value=50, value=10  )
