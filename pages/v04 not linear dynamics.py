@@ -40,9 +40,11 @@ class Buyer(object):
                     self.price = random.randint(self.market.min_price, self.market.max_price)
         else:
             self.delay = 0
+        
+        if self.price <= 1:
+            self.price = 1
         self.quantity = 0 # no stock
 
-    
 class Seller(object):
     def __init__ (self, env, name, market):
         self.env, self.name = env, name
@@ -71,6 +73,9 @@ class Seller(object):
                     self.price = random.randint(self.market.min_price, self.market.max_price)
         else:
             self.delay = 0            
+        
+        if self.price <= 1:
+            self.price = 1
         self.quantity = self.production
             
 @dataclass
